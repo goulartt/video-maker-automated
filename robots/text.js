@@ -1,11 +1,55 @@
 const algorithmia = require('algorithmia')
 const algorithmaApiKey = require('../credentials/algorithmia.json').apiKey
 const sbd = require('sbd');
+const watsonApiKey = require('../credentials/ibm-credentials.json').apiKey;
+const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
+
+var nlu = new NaturalLanguageUnderstandingV1({
+    iam_apikey: watsonApiKey,
+    version: '2018-04-05',
+    url: 'https://gateway.watsonplatform.net/natural-language-understanding/api'
+})
+
+
+limitiMaximumSentences = (content) => {
+    content.sentences = content.sentences.slice(0, content.maximumSentences)
+}
+
+fetchWatsonAndReturnKeywords = async (sentence) => {
+    return new Promise((resolve, reject) => {
+        nlu.analyze({
+            text: sentence,
+            features: {
+                keywords: {}
+            }
+        }, (error, response) => {
+            if (error) {
+                console.log('error:', err);
+            }
+            const keywords = response.keywords.map((keyword) => {
+                return keyword.text
+            })
+
+            resolve(keywords)
+        })
+    }
+    )
+}
+
+fetchKeywordsOfAllSentences = async(content) => {
+    for (const sentence of content.sentences) {
+        sentence.keywords = await fetchWatsonAndReturnKeywords(sentence.text)
+    }
+}
+
+
 
 robot = async (content) => {
     await fetchContentFromWikipedia(content)
     sanitizeContent(content)
     breakContentIntoSentences(content)
+    limitiMaximumSentences(content)
+    await fetchKeywordsOfAllSentences(content)
 
     async function fetchContentFromWikipedia(content) {
         const algorithmiaAuth = algorithmia(algorithmaApiKey);
@@ -24,10 +68,10 @@ robot = async (content) => {
 
     }
     function removeBlankLinesAndMarkdown(text) {
-        const allLines = text.spit('\n')
+        const allLines = text.split('\n')
 
         const withoutBlankLines = allLines.filter((line) => {
-            if (line.trim().length === 0 || line.trim().startsWit('=')) {
+            if (line.trim().length === 0 || line.trim().startsWith('=')) {
                 return false
             }
 
