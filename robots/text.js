@@ -4,11 +4,13 @@ const sbd = require('sbd');
 const watsonApiKey = require('../credentials/ibm-credentials.json').apiKey;
 const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
 
-var nlu = new NaturalLanguageUnderstandingV1({
+const nlu = new NaturalLanguageUnderstandingV1({
     iam_apikey: watsonApiKey,
     version: '2018-04-05',
     url: 'https://gateway.watsonplatform.net/natural-language-understanding/api'
 })
+
+const state = require('./state')
 
 
 limitiMaximumSentences = (content) => {
@@ -44,12 +46,18 @@ fetchKeywordsOfAllSentences = async(content) => {
 
 
 
-robot = async (content) => {
+robot = async () => {
+
+    const content = state.load()
+
     await fetchContentFromWikipedia(content)
     sanitizeContent(content)
     breakContentIntoSentences(content)
     limitiMaximumSentences(content)
     await fetchKeywordsOfAllSentences(content)
+
+    state.save(content)
+    console.log(JSON.stringify(content, null, 4))
 
     async function fetchContentFromWikipedia(content) {
         const algorithmiaAuth = algorithmia(algorithmaApiKey);
