@@ -18,3 +18,11 @@ File: `ibm-credentials.json`
     "url": "https://gateway.watsonplatform.net/natural-language-understanding/api"
 }
 ```
+
+## Google search
+File: `google-search.json`
+```
+{
+    "apiKey": "bbD62HewqelRPd3KUw0P0jedsadasarX9BQbDJcxUn0vd9"
+}
+```
