@@ -57,7 +57,6 @@ robot = async () => {
     await fetchKeywordsOfAllSentences(content)
 
     state.save(content)
-    console.log(JSON.stringify(content, null, 4))
 
     async function fetchContentFromWikipedia(content) {
         const algorithmiaAuth = algorithmia(algorithmaApiKey);
