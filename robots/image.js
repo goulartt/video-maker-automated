@@ -4,17 +4,18 @@ const customSearch = google.customsearch('v1')
 const imageDownloader = require('image-downloader')
 const googleSearchCredentials = require('../credentials/google-search')
 
+
 robot = async () => {
+    console.log('> [image-robot] Starting...')
     const content = state.load()
 
     await fetchImagesOfAllSentences(content)
-
+    await downloadAllImages(content)
     state.save(content)
 
-    await downloadAllImages(content) 
 
     async function fetchImagesOfAllSentences(content) {
-        for( const sentence of content.sentences) {
+        for (const sentence of content.sentences) {
             const query = `${content.searchTerm} ${sentence.keywords[0]}`
             sentence.images = await fetchGoogleAndReturnImagesLinks(query)
 
@@ -42,7 +43,7 @@ robot = async () => {
         content.downloadedImages = []
 
 
-        for(let sentenceIndex = 0; sentenceIndex < content.sentences.length; sentenceIndex++) {
+        for (let sentenceIndex = 0; sentenceIndex < content.sentences.length; sentenceIndex++) {
 
             let images = content.sentences[sentenceIndex].images
 
@@ -74,6 +75,9 @@ robot = async () => {
             dest: `./content/${fileName}`
         })
     }
+
+
+
 
 }
 
